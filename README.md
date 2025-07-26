@@ -2,6 +2,12 @@
 
 这是一个基于 Nitro 构建的轻量级 API 代理服务，可以轻松部署在 Vercel、Netlify、Cloudflare Workers 等无服务器平台上，用于代理和转发 API 请求。
 
+<!--
+  注意：请将下面的链接替换为您自己的 GitHub 仓库 URL，以便一键部署按钮正常工作。
+-->
+
+[![部署在 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/OrzMiku/api-proxy)
+
 ## 项目概述
 
 本项目旨在构建一个简单高效的 API 代理服务 MVP（最小可行产品），专注于核心的请求转发功能。
@@ -22,11 +28,11 @@
 
 ## 代理配置表
 
-| API 端点 | 目标地址 | 环境变量 (示例) | 说明 |
-| --- | --- | --- | --- |
-| `/gemini/**` | `https://generativelanguage.googleapis.com` | `PROXY_GEMINI_TARGET=https://generativelanguage.googleapis.com` | Google Gemini API |
-| `/openai/**` | `https://api.openai.com` | `PROXY_OPENAI_TARGET=https://api.openai.com` | OpenAI API |
-| `/anthropic/**` | `https://api.anthropic.com` | `PROXY_ANTHROPIC_TARGET=https://api.anthropic.com` | Anthropic API |
+| API 端点        | 目标地址                                    | 环境变量 (示例)                                                 | 说明              |
+| --------------- | ------------------------------------------- | --------------------------------------------------------------- | ----------------- |
+| `/gemini/**`    | `https://generativelanguage.googleapis.com` | `PROXY_GEMINI_TARGET=https://generativelanguage.googleapis.com` | Google Gemini API |
+| `/openai/**`    | `https://api.openai.com`                    | `PROXY_OPENAI_TARGET=https://api.openai.com`                    | OpenAI API        |
+| `/anthropic/**` | `https://api.anthropic.com`                 | `PROXY_ANTHROPIC_TARGET=https://api.anthropic.com`              | Anthropic API     |
 
 ## 如何扩展
 
