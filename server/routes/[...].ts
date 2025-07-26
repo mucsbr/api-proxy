@@ -28,9 +28,11 @@ export default defineEventHandler(async (event) => {
   const target = proxyTargets.find((item) => path.startsWith(item.path));
 
   if (target) {
-    // 构造目标 URL
-    const targetUrl = new URL(target.target);
-    targetUrl.pathname = path.replace(target.path, "");
+    // 构造目标 URL，并正确处理路径和查询参数
+    const requestUrl = getRequestURL(event);
+    const remainingPath = requestUrl.pathname.replace(target.path, "");
+    const targetUrl = new URL(remainingPath, target.target);
+    targetUrl.search = requestUrl.search;
 
     // 移除客户端 IP 相关 headers，保护隐私
     const headers = getRequestHeaders(event);
