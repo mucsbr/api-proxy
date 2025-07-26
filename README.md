@@ -16,40 +16,35 @@
 
 ### 配置管理
 
-- **结构化配置**：采用配置结构体数组的方式管理 API 端点映射关系
-- **易于扩展**：支持快速添加新的 API 端点代理配置文件
-- **集中管理**：所有代理配置统一维护，便于管理和更新
+- **环境变量配置**：通过环境变量动态配置和管理 API 代理规则，提高安全性和灵活性。
+- **易于扩展**：可以轻松通过添加新的环境变量来支持更多的 API 服务。
+- **环境分离**：不同部署环境（如开发、生产）可以使用不同的配置。
 
 ## 代理配置表
 
-| API 端点 | 目标地址                                  | 说明              |
-| -------- | ----------------------------------------- | ----------------- |
-| /gemini  | https://generativelanguage.googleapis.com | Google Gemini API |
-| ...      | ...                                       | 可扩展            |
+| API 端点 | 目标地址 | 环境变量 (示例) | 说明 |
+| --- | --- | --- | --- |
+| `/gemini/**` | `https://generativelanguage.googleapis.com` | `PROXY_GEMINI_TARGET=https://generativelanguage.googleapis.com` | Google Gemini API |
+| `/openai/**` | `https://api.openai.com` | `PROXY_OPENAI_TARGET=https://api.openai.com` | OpenAI API |
+| `/anthropic/**` | `https://api.anthropic.com` | `PROXY_ANTHROPIC_TARGET=https://api.anthropic.com` | Anthropic API |
 
 ## 如何扩展
 
-要添加新的代理路由，请编辑 `server/routes/index.ts` 文件中的 `proxyTargets` 数组。
+通过在项目根目录创建 `.env` 文件并添加环境变量来配置代理。
 
-例如，要添加一个新的代理，使其将 `/my-api` 的请求转发到 `https://api.example.com`，您可以这样修改：
+例如，要添加一个新的代理，将 `/my-api/**` 的请求转发到 `https://api.example.com`，您可以在 `.env` 文件中添加以下行：
 
-```typescript
-const proxyTargets: ProxyTarget[] = [
-  {
-    path: "/gemini",
-    target: "https://generativelanguage.googleapis.com",
-  },
-  {
-    path: "/my-api",
-    target: "https://api.example.com",
-  },
-  // 在这里添加更多代理配置
-];
 ```
+PROXY_MYAPI_TARGET=https://api.example.com
+```
+
+### .env 示例
+
+[.env.example](./.env.example)
 
 ## 技术架构
 
 - **框架**：Nitro - 现代化的全栈 Web 框架
 - **部署**：支持多种无服务器平台
 - **性能**：轻量级设计，快速冷启动
-- **维护**：使用统一的配置文件进行管理。
+- **维护**：通过环境变量进行统一管理，无需修改代码即可更新代理目标。

@@ -1,37 +1,38 @@
-// server/routes/index.ts
+// server/routes/[...].ts
 
 /**
- * 代理配置接口
- * @property path - 匹配的路径，例如 /gemini
- * @property target - 目标 URL
+ * 从环境变量中解析代理配置
+ * @returns { {path: string, target: string}[] }
  */
-interface ProxyTarget {
-  path: string;
-  target: string;
+function getProxyTargets() {
+  const env = process.env;
+  const targets = [];
+
+  for (const key in env) {
+    if (key.startsWith("PROXY_") && key.endsWith("_TARGET")) {
+      const path = `/${key.replace("PROXY_", "").replace("_TARGET", "").toLowerCase()}`;
+      const target = env[key];
+      if (target) {
+        targets.push({ path, target });
+      }
+    }
+  }
+  
+  return targets;
 }
-
-/**
- * 代理配置表
- */
-const proxyTargets: ProxyTarget[] = [
-  {
-    path: "/gemini",
-    target: "https://generativelanguage.googleapis.com",
-  },
-  // 在这里添加更多代理配置
-];
 
 export default defineEventHandler(async (event) => {
   const path = event.path;
+  const proxyTargets = getProxyTargets();
 
   // 寻找匹配的代理目标
-  const target = proxyTargets.find((item) => path.startsWith(item.path));
+  const targetConfig = proxyTargets.find((item) => path.startsWith(item.path));
 
-  if (target) {
+  if (targetConfig) {
     // 构造目标 URL，并正确处理路径和查询参数
     const requestUrl = getRequestURL(event);
-    const remainingPath = requestUrl.pathname.replace(target.path, "");
-    const targetUrl = new URL(remainingPath, target.target);
+    const remainingPath = requestUrl.pathname.replace(targetConfig.path, "");
+    const targetUrl = new URL(remainingPath, targetConfig.target);
     targetUrl.search = requestUrl.search;
 
     // 移除客户端 IP 相关 headers，保护隐私
