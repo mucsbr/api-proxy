@@ -1,56 +1,93 @@
-# API 代理服务
+# API Proxy Service
 
-这是一个基于 Nitro 构建的轻量级 API 代理服务，可以轻松部署在 Vercel、Netlify、Cloudflare Workers 等无服务器平台上，用于代理和转发 API 请求。
+**English** | [中文](README.ZH.md)
 
-<!--
-  注意：请将下面的链接替换为您自己的 GitHub 仓库 URL，以便一键部署按钮正常工作。
--->
+A simple API proxy service built with Nitro framework. It forwards HTTP requests to configured target APIs based on request paths.
 
-[![部署在 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/OrzMiku/api-proxy)
+## 🚀 Quick Start
 
-## 项目概述
+### Deploy to Vercel
 
-本项目旨在构建一个简单高效的 API 代理服务 MVP（最小可行产品），专注于核心的请求转发功能。
+> Note: Please be aware of Vercel's free plan usage limits. Public deployment is not recommended to prevent abuse.
 
-## 核心功能
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/OrzMiku/api-proxy)
 
-### 请求转发机制
+### Deploy to Cloudflare
 
-- **1:1 请求转发**：完整转发用户的 HTTP 请求（包括请求头、请求体、查询参数等）到目标 API 服务
-- **隐私保护**：在转发过程中自动过滤用户真实 IP 等敏感信息，保护用户隐私
-- **1:1 响应返回**：将目标 API 的响应原样返回给客户端，保持数据完整性
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/OrzMiku/api-proxy)
 
-### 配置管理
+## 📝 What This Project Does
 
-- **环境变量配置**：通过环境变量动态配置和管理 API 代理规则，提高安全性和灵活性。
-- **易于扩展**：可以轻松通过添加新的环境变量来支持更多的 API 服务。
-- **环境分离**：不同部署环境（如开发、生产）可以使用不同的配置。
+This is a simple reverse proxy that:
 
-## 代理配置表
+- Takes HTTP requests on specific paths (e.g., `/openai/**`)
+- Forwards them to configured target servers (e.g., `https://api.openai.com`)
+- Returns the response back to the client
+- Removes client IP headers for basic privacy
 
-| API 端点        | 目标地址                                    | 环境变量 (示例)                                                 | 说明              |
+It's useful for:
+
+- Bypassing CORS restrictions in web applications
+- Hiding API endpoints behind a single domain
+- Adding a simple layer between clients and APIs
+
+## 🌟 Features
+
+- **Request Forwarding**: Forwards HTTP requests including headers, body, and query parameters
+- **Privacy Protection**: Removes client IP headers (`x-forwarded-for`, `x-real-ip`) from forwarded requests
+- **Environment Configuration**: Configure proxy targets via environment variables
+- **Optional Dashboard**: Simple web interface to view configured endpoints
+- **Lightweight**: Minimal dependencies, built with Nitro framework
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Configure proxy targets using the pattern `PROXY_{NAME}_TARGET`:
+
+```env
+# Basic proxy configurations
+PROXY_GEMINI_TARGET=https://generativelanguage.googleapis.com
+PROXY_OPENAI_TARGET=https://api.openai.com
+PROXY_ANTHROPIC_TARGET=https://api.anthropic.com
+
+# Optional: Enable homepage dashboard
+HOMEPAGE_ENABLE=true
+```
+
+### Proxy Configuration Table
+
+| Endpoint Path   | Target URL                                  | Environment Variable                                            | Description       |
 | --------------- | ------------------------------------------- | --------------------------------------------------------------- | ----------------- |
 | `/gemini/**`    | `https://generativelanguage.googleapis.com` | `PROXY_GEMINI_TARGET=https://generativelanguage.googleapis.com` | Google Gemini API |
 | `/openai/**`    | `https://api.openai.com`                    | `PROXY_OPENAI_TARGET=https://api.openai.com`                    | OpenAI API        |
 | `/anthropic/**` | `https://api.anthropic.com`                 | `PROXY_ANTHROPIC_TARGET=https://api.anthropic.com`              | Anthropic API     |
 
-## 如何扩展
+### Adding New Proxies
 
-通过在项目根目录创建 `.env` 文件并添加环境变量来配置代理。
+To add a new proxy endpoint, simply add an environment variable following the naming pattern:
 
-例如，要添加一个新的代理，将 `/my-api/**` 的请求转发到 `https://api.example.com`，您可以在 `.env` 文件中添加以下行：
-
-```
+```env
+# Forward /myapi/** requests to https://api.example.com
 PROXY_MYAPI_TARGET=https://api.example.com
+
+# Forward /v1/chat/** requests to https://chat.example.com
+PROXY_V1_CHAT_TARGET=https://chat.example.com
 ```
 
-### .env 示例
+The service will automatically:
 
-[.env.example](./.env.example)
+- Convert `PROXY_MYAPI_TARGET` to route `/myapi/**`
+- Convert `PROXY_V1_CHAT_TARGET` to route `/v1/chat/**`
 
-## 技术架构
+## 📊 Dashboard
 
-- **框架**：Nitro - 现代化的全栈 Web 框架
-- **部署**：支持多种无服务器平台
-- **性能**：轻量级设计，快速冷启动
-- **维护**：通过环境变量进行统一管理，无需修改代码即可更新代理目标。
+When `HOMEPAGE_ENABLE=true`, accessing the root URL shows:
+
+- List of configured proxy endpoints
+- Target URLs for each endpoint
+- Copy buttons for quick URL copying
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
