@@ -9,7 +9,9 @@ export const proxyTargets = (() => {
       const path = `/${key
         .replace("PROXY_", "")
         .replace("_TARGET", "")
-        .toLowerCase()}`;
+        .toLowerCase()}`
+        .split("_")
+        .join("/");
       const target = env[key];
       if (target) {
         targets.push({ path, target });
