@@ -1,6 +1,7 @@
 // server/routes/index.ts
 
 import { proxyTargets } from "~/utils/proxy";
+import { isAuthenticated, isAuthRequired } from "~/utils/auth";
 
 export default defineEventHandler(async (event) => {
   const homepageEnabled = process.env.HOMEPAGE_ENABLE === "true";
@@ -8,6 +9,11 @@ export default defineEventHandler(async (event) => {
   if (!homepageEnabled) {
     setResponseStatus(event, 404);
     return "404 Not Found";
+  }
+
+  // Check authentication
+  if (!isAuthenticated(event)) {
+    return renderLoginPage(event);
   }
 
   // Get the base URL of the current deployment
@@ -73,6 +79,36 @@ export default defineEventHandler(async (event) => {
     .header {
       text-align: center;
       margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .logout-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--muted-foreground));
+      text-decoration: none;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      transition: all 0.2s ease-in-out;
+      background: hsl(var(--background));
+    }
+
+    .logout-button:hover {
+      color: hsl(var(--foreground));
+      border-color: hsl(var(--ring));
+      background: hsl(var(--muted));
+    }
+
+    .logout-icon {
+      width: 1rem;
+      height: 1rem;
     }
 
     .title {
@@ -265,6 +301,15 @@ export default defineEventHandler(async (event) => {
         padding: 1rem 0;
       }
 
+      .header {
+        margin-bottom: 2rem;
+      }
+
+      .logout-button {
+        position: static;
+        margin-bottom: 1rem;
+      }
+
       .title {
         font-size: 2rem;
       }
@@ -304,6 +349,16 @@ export default defineEventHandler(async (event) => {
     <div class="header">
       <h1 class="title">API Proxy Dashboard</h1>
       <p class="subtitle">Manage and monitor your API proxy endpoints with ease</p>
+      ${
+        isAuthRequired()
+          ? `<a href="/logout" class="logout-button">
+              <svg class="logout-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </a>`
+          : ""
+      }
     </div>
 
     ${
@@ -429,3 +484,243 @@ export default defineEventHandler(async (event) => {
   setHeader(event, "content-type", "text/html; charset=utf-8");
   return html;
 });
+
+/**
+ * Render login page
+ */
+function renderLoginPage(event: any) {
+  const requestUrl = getRequestURL(event);
+  const hasError = requestUrl.searchParams.get("error") === "invalid";
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - API Proxy Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --primary: 221.2 83.2% 53.3%;
+      --primary-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 221.2 83.2% 53.3%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --muted: 210 40% 96%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --radius: 0.5rem;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      color: hsl(var(--foreground));
+      background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.7) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: calc(var(--radius) + 4px);
+      padding: 2.5rem;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-icon {
+      width: 4rem;
+      height: 4rem;
+      margin: 0 auto 1.5rem;
+      background: hsl(var(--primary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: hsl(var(--primary-foreground));
+    }
+
+    .login-icon svg {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .login-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .login-subtitle {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .error-message {
+      background: hsl(var(--destructive) / 0.1);
+      border: 1px solid hsl(var(--destructive) / 0.3);
+      color: hsl(var(--destructive));
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .error-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: hsl(var(--foreground));
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      border: 1px solid hsl(var(--border));
+      border-radius: var(--radius);
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      transition: all 0.2s ease-in-out;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: hsl(var(--primary-foreground));
+      background: hsl(var(--primary));
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      font-family: inherit;
+    }
+
+    .submit-button:hover {
+      background: hsl(var(--primary) / 0.9);
+    }
+
+    .submit-button:active {
+      transform: scale(0.98);
+    }
+
+    .submit-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px hsl(var(--ring) / 0.3);
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .login-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-subtitle">Please enter your password to access the dashboard</p>
+      </div>
+
+      ${
+        hasError
+          ? `<div class="error-message">
+              <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Invalid password. Please try again.</span>
+             </div>`
+          : ""
+      }
+
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Enter your password"
+            required
+            autofocus
+          />
+        </div>
+
+        <button type="submit" class="submit-button">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  setHeader(event, "content-type", "text/html; charset=utf-8");
+  return html;
+}

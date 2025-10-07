@@ -42,6 +42,7 @@
 - **隐私保护**：从转发的请求中移除客户端 IP 请求头（`x-forwarded-for`、`x-real-ip`）
 - **环境变量配置**：通过环境变量配置代理目标
 - **可选仪表板**：查看配置端点的简单 Web 界面
+- **密码保护**：使用可选的密码认证保护您的仪表板
 - **轻量级**：依赖少，基于 Nitro 框架构建
 
 ## ⚙️ 配置指南
@@ -58,6 +59,9 @@ PROXY_ANTHROPIC_TARGET=https://api.anthropic.com
 
 # 可选：启用首页仪表板
 HOMEPAGE_ENABLE=true
+
+# 可选：使用密码保护仪表板
+HOMEPAGE_PASSWORD=your-secure-password
 ```
 
 ### 代理配置表
@@ -92,6 +96,24 @@ PROXY_V1_CHAT_TARGET=https://chat.example.com
 - 配置的代理端点列表
 - 每个端点的目标 URL
 - 快速复制 URL 的复制按钮
+
+### 密码保护
+
+要保护您的仪表板，请设置 `HOMEPAGE_PASSWORD` 环境变量：
+
+```env
+HOMEPAGE_ENABLE=true
+HOMEPAGE_PASSWORD=your-secure-password
+```
+
+启用密码保护后：
+
+- 用户必须使用密码登录才能查看仪表板
+- 认证通过安全 Cookie 持续 7 天
+- 已认证用户的仪表板中会显示登出按钮
+- 更改密码将使所有现有会话失效
+
+> **注意**：密码保护仅适用于仪表板首页。API 代理端点仍然是公开可访问的，不受此密码保护。
 
 ## 📄 许可证
 

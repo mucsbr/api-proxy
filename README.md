@@ -37,6 +37,7 @@ It's useful for:
 - **Privacy Protection**: Removes client IP headers (`x-forwarded-for`, `x-real-ip`) from forwarded requests
 - **Environment Configuration**: Configure proxy targets via environment variables
 - **Optional Dashboard**: Simple web interface to view configured endpoints
+- **Password Protection**: Secure your dashboard with optional password authentication
 - **Lightweight**: Minimal dependencies, built with Nitro framework
 
 ## ⚙️ Configuration
@@ -53,6 +54,9 @@ PROXY_ANTHROPIC_TARGET=https://api.anthropic.com
 
 # Optional: Enable homepage dashboard
 HOMEPAGE_ENABLE=true
+
+# Optional: Protect dashboard with password
+HOMEPAGE_PASSWORD=your-secure-password
 ```
 
 ### Proxy Configuration Table
@@ -87,6 +91,24 @@ When `HOMEPAGE_ENABLE=true`, accessing the root URL shows:
 - List of configured proxy endpoints
 - Target URLs for each endpoint
 - Copy buttons for quick URL copying
+
+### Password Protection
+
+To secure your dashboard, set the `HOMEPAGE_PASSWORD` environment variable:
+
+```env
+HOMEPAGE_ENABLE=true
+HOMEPAGE_PASSWORD=your-secure-password
+```
+
+When password protection is enabled:
+
+- Users must log in with the password to view the dashboard
+- Authentication persists for 7 days via secure cookies
+- A logout button appears in the dashboard for authenticated users
+- Changing the password invalidates all existing sessions
+
+> **Note**: Password protection only applies to the dashboard homepage. API proxy endpoints remain publicly accessible and are not protected by this password.
 
 ## 📄 License
 
