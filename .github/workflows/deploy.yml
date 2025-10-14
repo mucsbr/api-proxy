@@ -24,7 +24,7 @@ jobs:
           deno-version: v2.x
 
       - name: Build step
-        run: "nitro build --preset deno-deploy"
+        run: "npm run build -- --preset deno-deploy"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
